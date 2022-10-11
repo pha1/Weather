@@ -17,12 +17,16 @@ import android.widget.ImageView;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import java.util.ArrayList;
+
 import okhttp3.OkHttpClient;
 
-public class MainActivity extends AppCompatActivity implements CitiesFragment.CitiesFragmentListener, CurrentWeatherFragment.CurrentWeatherListener {
+public class MainActivity extends AppCompatActivity implements CitiesFragment.CitiesFragmentListener, CurrentWeatherFragment.CurrentWeatherListener, WeatherForecastFragment.WeatherForecastListener{
 
     final String TAG = "test";
     final public static String APIKey = "7fe9da484c7de02dea89cf2ac74c962b";
+
+    ArrayList<Forecast> fiveDayForcast = new ArrayList<>();
 
     String urlImage;
     CurrentWeatherFragment currentWeatherFragment;
@@ -55,5 +59,8 @@ public class MainActivity extends AppCompatActivity implements CitiesFragment.Ci
     }
 
 
-
+    @Override
+    public void updateForecast(ArrayList<Forecast> fiveDayForecast) {
+        this.fiveDayForcast = fiveDayForecast;
+    }
 }

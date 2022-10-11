@@ -7,6 +7,8 @@
 
 package edu.uncc.weather;
 
+import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -19,6 +21,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.squareup.picasso.Picasso;
@@ -29,6 +32,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 import edu.uncc.weather.databinding.FragmentWeatherForecastBinding;
 import okhttp3.Call;
@@ -54,8 +58,6 @@ public class WeatherForecastFragment extends Fragment {
     private static final String ARG_PARAM_CITY = "city";
 
     private DataService.City mCity;
-
-    private ArrayList<Forecast> fiveDayForecast = new ArrayList<>();
 
     public WeatherForecastFragment() {
         // Required empty public constructor
@@ -107,6 +109,16 @@ public class WeatherForecastFragment extends Fragment {
         binding.textViewCityName.setText(mCity.getCity() + ", " + mCity.getCountry());
 
         listView = binding.listView;
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Log.d(TAG, "onItemClick: Position: " + i);
+            }
+        });
+    }
+
+    public void loadList(ArrayList<Forecast> fiveDayForecast) {
+        listView = binding.listView;
         adapter = new ForecastArrayAdapter(getActivity(), R.layout.forecast_row_item, fiveDayForecast);
         listView.setAdapter(adapter);
     }
@@ -139,21 +151,22 @@ public class WeatherForecastFragment extends Fragment {
                         JSONObject jsonObject = new JSONObject(response.body().string());
                         // Retrieve the List
                         JSONArray forecastJson = jsonObject.getJSONArray("list");
-                        Log.d(TAG, "onResponse: List retrieved");
+                        Log.d(TAG, "onResponse: " + forecastJson.length());
                         // The list is an array of objects that contains objects/arrays inside of it
-
-                        Forecast forecast = new Forecast();
-                        Log.d(TAG, "onResponse: Created Forecast object");
+                        ArrayList<Forecast> fiveDayForecast = new ArrayList<>();
 
                         // Iterate the list
                         for (int i = 0; i < forecastJson.length(); i++) {
+                            //Log.d(TAG, "onResponse: Created Forecast object");
+                            Forecast forecast = new Forecast();
+
                             // Get the object
                             JSONObject forecastJsonObject = forecastJson.getJSONObject(i);
-                            Log.d(TAG, "onResponse: Outer Json Object");
+                            //Log.d(TAG, "onResponse: Outer Json Object");
 
                             // Get the temp information
                             JSONObject forecastInnerObject = forecastJsonObject.getJSONObject("main");
-                            Log.d(TAG, "onResponse: Main Object");
+                            //Log.d(TAG, "onResponse: Main Object");
                             forecast.setTemp(forecastInnerObject.getInt("temp"));
                             forecast.setTemp_min(forecastInnerObject.getDouble("temp_min"));
                             forecast.setTemp_max(forecastInnerObject.getDouble("temp_max"));
@@ -161,37 +174,58 @@ public class WeatherForecastFragment extends Fragment {
 
                             // Get weather information
                             JSONArray innerArray = forecastJsonObject.getJSONArray("weather");
-                            Log.d(TAG, "onResponse: Weather Array");
+                            //Log.d(TAG, "onResponse: Weather Array");
                             forecastInnerObject = innerArray.getJSONObject(0);
                             forecast.setDescription(forecastInnerObject.getString("description"));
-                            Log.d(TAG, "onResponse: Set Description");
+                            //Log.d(TAG, "onResponse: Set Description");
                             forecast.setIcon(forecastInnerObject.getString("icon"));
-                            Log.d(TAG, "onResponse: Set Icon");
+                            //Log.d(TAG, "onResponse: Set Icon");
 
                             // Get date and time
                             forecast.setDateAndTime(forecastJsonObject.getString("dt_txt"));
-                            Log.d(TAG, "onResponse: Date and Time");
+                            Log.d(TAG, "onResponse: " + forecast.dateAndTime);
 
                             fiveDayForecast.add(forecast);
                         }
-                        Log.d(TAG, "onResponse: " + forecast.dateAndTime);
+
+                        weatherForecastListener.updateForecast(fiveDayForecast);
+
+                        Log.d(TAG, "onResponse: # of Objects " + fiveDayForecast.size());
+
+                        Handler mainHandler = new Handler(Looper.getMainLooper());
+
+                        Runnable myRunnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                Log.d(TAG, "run: ArrayList size = " + fiveDayForecast.size());
+                                loadList(fiveDayForecast);
+                            }
+                        };
+                        mainHandler.post(myRunnable);
 
                     } catch (JSONException e) {
-
+                        e.printStackTrace();
                     }
                 } else {
 
                 }
-                Handler mainHandler = new Handler(Looper.getMainLooper());
-
-                Runnable myRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        adapter.notifyDataSetChanged();
-                    }
-                };
-                mainHandler.post(myRunnable);
             }
         });
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof WeatherForecastListener) {
+            weatherForecastListener = (WeatherForecastListener) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement WeatherForecastListener");
+        }
+    }
+
+    WeatherForecastListener weatherForecastListener;
+
+    public interface WeatherForecastListener {
+        void updateForecast(ArrayList<Forecast> fiveDayForecast);
     }
 }
