@@ -180,6 +180,7 @@
             android:layout_height="wrap_content"
             android:text="TextView"
             android:textAlignment="textEnd"
+            android:textAllCaps="false"
             app:layout_constraintBottom_toBottomOf="@+id/textView5"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/textViewTempMin"

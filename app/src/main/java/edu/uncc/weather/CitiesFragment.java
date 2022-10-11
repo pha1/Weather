@@ -1,3 +1,10 @@
+/**
+ * Homework 6
+ * Group9_Homework6
+ * Phi Ha
+ * Srinath Dittakavi
+ */
+
 package edu.uncc.weather;
 
 import android.content.Context;
