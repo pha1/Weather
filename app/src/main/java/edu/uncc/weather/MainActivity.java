@@ -21,15 +21,10 @@ import java.util.ArrayList;
 
 import okhttp3.OkHttpClient;
 
-public class MainActivity extends AppCompatActivity implements CitiesFragment.CitiesFragmentListener, CurrentWeatherFragment.CurrentWeatherListener, WeatherForecastFragment.WeatherForecastListener{
+public class MainActivity extends AppCompatActivity implements CitiesFragment.CitiesFragmentListener, CurrentWeatherFragment.CurrentWeatherListener{
 
     final String TAG = "test";
     final public static String APIKey = "7fe9da484c7de02dea89cf2ac74c962b";
-
-    ArrayList<Forecast> fiveDayForcast = new ArrayList<>();
-
-    String urlImage;
-    CurrentWeatherFragment currentWeatherFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,11 +51,5 @@ public class MainActivity extends AppCompatActivity implements CitiesFragment.Ci
                 .replace(R.id.rootView, WeatherForecastFragment.newInstance(city), "Weather Forecast")
                 .addToBackStack(null)
                 .commit();
-    }
-
-
-    @Override
-    public void updateForecast(ArrayList<Forecast> fiveDayForecast) {
-        this.fiveDayForcast = fiveDayForecast;
     }
 }

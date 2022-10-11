@@ -70,7 +70,6 @@ public class WeatherForecastFragment extends Fragment {
      * @param city Parameter 1.
      * @return A new instance of fragment WeatherForcastFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static WeatherForecastFragment newInstance(DataService.City city) {
         WeatherForecastFragment fragment = new WeatherForecastFragment();
         Bundle args = new Bundle();
@@ -104,26 +103,30 @@ public class WeatherForecastFragment extends Fragment {
 
         getActivity().setTitle("Weather Forecast");
 
+        // Sends a request to retrieve data from API
+        // Parses and displays the data
         getForecast();
 
+        // City, Country
         binding.textViewCityName.setText(mCity.getCity() + ", " + mCity.getCountry());
-
-        listView = binding.listView;
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.d(TAG, "onItemClick: Position: " + i);
-            }
-        });
     }
 
+    /**
+     * The adapter uses Picasso to load the Image, which needs to be called in the Main Thread
+     * This is called in a Runnable on line 196-201
+     * @param fiveDayForecast The ArrayList of Forecast Objects
+     */
     public void loadList(ArrayList<Forecast> fiveDayForecast) {
         listView = binding.listView;
         adapter = new ForecastArrayAdapter(getActivity(), R.layout.forecast_row_item, fiveDayForecast);
         listView.setAdapter(adapter);
     }
 
+    /**
+     * Sends a request to the API for Forecast Information of the city
+     */
     public void getForecast() {
+        // Build a URL from given information by the city selected
         HttpUrl url = HttpUrl.parse("https://api.openweathermap.org/data/2.5/forecast").newBuilder()
                 .addQueryParameter("lat", String.valueOf(mCity.getLat()))
                 .addQueryParameter("lon", String.valueOf(mCity.getLon()))
@@ -132,10 +135,12 @@ public class WeatherForecastFragment extends Fragment {
                 .build();
 
 
+        // Request
         Request request = new Request.Builder()
                 .url(url)
                 .build();
 
+        // Client enqueue
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
@@ -148,6 +153,7 @@ public class WeatherForecastFragment extends Fragment {
                 Log.d(TAG, "onResponse: Start Response for Forcast");
                 if (response.isSuccessful()){
                     try {
+                        // Get the Object, which contains Objects and Array within it
                         JSONObject jsonObject = new JSONObject(response.body().string());
                         // Retrieve the List
                         JSONArray forecastJson = jsonObject.getJSONArray("list");
@@ -188,12 +194,12 @@ public class WeatherForecastFragment extends Fragment {
                             fiveDayForecast.add(forecast);
                         }
 
-                        weatherForecastListener.updateForecast(fiveDayForecast);
-
                         Log.d(TAG, "onResponse: # of Objects " + fiveDayForecast.size());
 
+                        // Handler to send a message to the Main Thread
                         Handler mainHandler = new Handler(Looper.getMainLooper());
 
+                        // Runnable
                         Runnable myRunnable = new Runnable() {
                             @Override
                             public void run() {
@@ -211,21 +217,5 @@ public class WeatherForecastFragment extends Fragment {
                 }
             }
         });
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        if (context instanceof WeatherForecastListener) {
-            weatherForecastListener = (WeatherForecastListener) context;
-        } else {
-            throw new RuntimeException(context.toString() + " must implement WeatherForecastListener");
-        }
-    }
-
-    WeatherForecastListener weatherForecastListener;
-
-    public interface WeatherForecastListener {
-        void updateForecast(ArrayList<Forecast> fiveDayForecast);
     }
 }
