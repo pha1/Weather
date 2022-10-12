@@ -41,9 +41,9 @@ public class ForecastArrayAdapter extends ArrayAdapter<Forecast> {
         // Set Text
         textViewDateTime.setText(forecast.dateAndTime);
         textViewTemp.setText(forecast.temp + "F");
-        textViewTempMax.setText(forecast.temp_max + "F");
-        textViewTempMin.setText(forecast.temp_min + "F");
-        textViewHumidity.setText(forecast.humidity + "%");
+        textViewTempMax.setText("Max: " + forecast.temp_max + "F");
+        textViewTempMin.setText("Min: " + forecast.temp_min + "F");
+        textViewHumidity.setText("Humidity: " + forecast.humidity + "%");
         textViewDescription.setText(forecast.description);
 
         // Create a String to hold the URL
